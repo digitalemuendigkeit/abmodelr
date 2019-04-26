@@ -4,4 +4,4 @@
 
 #config <- read_yaml(file)
 
-config <- read_yaml("config2.yml")
+config <- read_yaml("config.yml")
