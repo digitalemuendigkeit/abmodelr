@@ -7,5 +7,11 @@ To test this run
 - abmodel.r
 - analyzeResults.R
 
+
+# Data Generation 
+
+- User and Post data is generated from statistically independent topic models.
+- This causes cosine similarity to fall between 0.4 - 0.9 in most cases
+
 # Data export form the simulation
 - Generate user names ...
