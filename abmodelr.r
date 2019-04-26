@@ -18,6 +18,8 @@ news_posts <- generate_news(config)
 
 
 # initilize ground truth
+total_newsposts <-config$n_newsposts + config$n_nesposts_step * config$n_steps
+
 user %>% select(starts_with("topic")) -> mat_user
 news_posts %>% select(starts_with("topic")) -> mat_posts
 cosine_matrix <- matrix(c(0), nrow = config$n_users, ncol = config$n_newsposts)
@@ -50,10 +52,10 @@ generate_topn_truth <- function(user_id, cosine_matrix, n = 1) {
 
 
 
-m <- matrix( sample(c(0), config$n_newsposts*config$n_users, replace=TRUE),
-             ncol=config$n_newsposts,
+m <- matrix( sample(c(0), total_newsposts*config$n_users, replace=TRUE),
+             ncol=total_newsposts,
              dimnames=list(user=paste("u", 1:config$n_users, sep=''), 
-                           item=paste("i", 1:config$n_newsposts, sep='')))
+                           item=paste("i", 1:total_newsposts, sep='')))
 
 ui_matrix <- as(m, "dgCMatrix")
 trainingmatrix <- (new("realRatingMatrix", data = ui_matrix))
@@ -88,8 +90,8 @@ for (steps in 1:config$n_steps) {
   for(user_id in 1:config$n_users){
     # generate top 10 recommendations 
     
-#    user_id <- 3
-#    steps <- 1
+    #select currently relevant posts
+    current_posts <- m[ ,1:(config$n_newsposts+config$n_nesposts_step * steps)]
     
     ui_matrix <- as(m, "dgCMatrix")
     trainingmatrix <- (new("realRatingMatrix", data = ui_matrix))

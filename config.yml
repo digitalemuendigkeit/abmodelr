@@ -3,7 +3,8 @@ title : "This is a demo simulation for only a few topics and a few users"
 n_topics : 2
 n_users : 200
 
-n_newsposts : 500
+n_newsposts : 500 #number of initial posts
+n_nesposts_step : 10 # number of new posts that are generated for each step
 topic_limit : 3
 
 n_steps : 100
