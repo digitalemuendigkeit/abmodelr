@@ -1,5 +1,4 @@
 library(tidyverse)
-library(DT)
 library(data.table)
 library(yaml)
 library(rstudioapi)
