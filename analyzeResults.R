@@ -4,22 +4,19 @@ library(data.table)
 library(yaml)
 library(rstudioapi)
 
-file <- selectFile(caption = "Select File", label = "Select",
-                   path = getActiveProject(), filter = "All YAML Files (*.yml)",
-                   existing = TRUE)
-
-config <- read_yaml(file)
+source("select_file.R")
 
 
 
 # read results 
 rds_filename <- config$outputfilename
-
 results_data <- read_rds(rds_filename)
-
 user <- results_data$user
 exposure <- results_data$exposure
-# analyze results
+news_posts <- results_data$news_posts
+
+
+# analyze results ----
 user %>% ggplot() +
   aes(topic_1) + geom_histogram()
 

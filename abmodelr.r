@@ -4,12 +4,8 @@ library(data.table)
 library(yaml)
 library(rstudioapi)
 
-#file <- selectFile(caption = "Select File", label = "Select",
-#           path = getActiveProject(), filter = "All YAML Files (*.yml)",
-#           existing = TRUE)
+source("select_file.R")
 
-#config <- read_yaml(file)
-config <- read_yaml("config.yml")
 
 # User generation ----
 user_ids <- 1:config$n_users
