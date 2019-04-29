@@ -79,7 +79,7 @@ generate_topn_rec <- function(user_id, cosine_matrix, n = 1) {
 
 
 # generate an empty exposure matrix with rownumbers = posts , colnumbers = simulationsteps
-exposure <- matrix(c(0), nrow = config$n_newsposts, ncol = config$n_steps)
+exposure <- matrix(c(0), nrow = total_newsposts, ncol = config$n_steps)
 
 
 # run all simulation steps
@@ -91,9 +91,10 @@ for (steps in 1:config$n_steps) {
     # generate top 10 recommendations 
     
     #select currently relevant posts
-    current_posts <- m[ ,1:(config$n_newsposts+config$n_nesposts_step * steps)]
+    n_current_posts <- config$n_newsposts+config$n_nesposts_step * steps
+    current_posts <- m[ ,1:n_current_posts]
     
-    ui_matrix <- as(m, "dgCMatrix")
+    ui_matrix <- as(current_posts, "dgCMatrix")
     trainingmatrix <- (new("realRatingMatrix", data = ui_matrix))
     
     rec_sys <- Recommender(trainingmatrix, method=config$recommender)
@@ -109,6 +110,7 @@ for (steps in 1:config$n_steps) {
     evaluation <- (cosine_matrix[user_id, consumed_item] * 5)
     m[user_id, consumed_item] <- evaluation
     
+    
     # update user interests ----
       
     
@@ -119,6 +121,13 @@ for (steps in 1:config$n_steps) {
       exposure[consumed_item, steps] <- temp
     
   }
+  
+  #decrease relevance of old news
+  decay_matrix <- diag(c(rep(config$decay_factor, n_current_posts),rep(1, total_newsposts - n_current_posts)))
+  
+  m <-t(decay_matrix %*% t(m))
+  colnames(m) <- paste("i", 1:total_newsposts, sep='')
+  
   if(steps > 1){
     exposure[,steps] <- exposure[, steps] + exposure[, steps -1]
   }
