@@ -4,12 +4,14 @@ n_topics : 2
 n_users : 200
 
 n_newsposts : 50 #number of initial posts
-n_nesposts_step : 10 # number of new posts that are generated for each step
+n_newsposts_step : 5 # number of new posts that are generated for each step
 topic_limit : 3
 
-decay_factor : 0.9 #factor that determines the decrease of relevance of news
+decay_factor : 0.6 #factor that determines the decrease of relevance of news
 
-n_steps : 10
+update_for_user : true #if true, training matrix will be updated after each users gets a prediciton, if false only once per step
+
+n_steps : 50
 outputfilename : "default.rds"
 
 recommender : "UBCF"

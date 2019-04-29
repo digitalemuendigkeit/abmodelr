@@ -18,13 +18,13 @@ news_posts <- generate_news(config)
 
 
 # initilize ground truth
-total_newsposts <-config$n_newsposts + config$n_nesposts_step * config$n_steps
+total_newsposts <-config$n_newsposts + config$n_newsposts_step  * config$n_steps
 
 user %>% select(starts_with("topic")) -> mat_user
 news_posts %>% select(starts_with("topic")) -> mat_posts
-cosine_matrix <- matrix(c(0), nrow = config$n_users, ncol = config$n_newsposts)
+cosine_matrix <- matrix(c(0), nrow = config$n_users, ncol = total_newsposts)
 for(i in 1:config$n_users) {
-  for(j in 1:config$n_newsposts) {
+  for(j in 1:total_newsposts) {
     cosine_matrix[i,j] <- lsa::cosine(unlist(mat_user[i,]), unlist(mat_posts[j,]))
   }
 }
@@ -44,7 +44,7 @@ generate_topn_truth <- function(user_id, cosine_matrix, n = 1) {
   df <- as_tibble(data.frame(t(cosine_matrix)))
   df <- df %>% mutate(id = 1:dim(df)[1]) %>% select(id, user_id)
   suppressMessages(
-    res <- top_n(df, n) 
+    res <- top_n(df, n)
   )
   names(res) <- c("id", "match")
   res %>% arrange(desc(match))
@@ -86,25 +86,48 @@ exposure <- matrix(c(0), nrow = total_newsposts, ncol = config$n_steps)
 pb <- txtProgressBar(min = 0, max = config$n_steps, initial = 0, char = "=",
                width = NA, title="Simulation Run", label, style = 3, file = "")
 for (steps in 1:config$n_steps) {
+  
+  #select currently relevant posts
+  n_current_posts <- config$n_newsposts+config$n_newsposts_step  * steps
+  current_posts <- m[ ,1:n_current_posts]
+  
+  #generate recommendations once per step
+  if(!config$update_for_user){
+    ui_matrix <- as(current_posts, "dgCMatrix")
+    trainingmatrix <- (new("realRatingMatrix", data = ui_matrix))
+    rec_sys <- Recommender(trainingmatrix, method=config$recommender)
+    recoms <- recommenderlab::predict(rec_sys, trainingmatrix, n = 10)
+  }
+  
+  #draw users that are randomly shown new content
+  first_users <- sample(1:config$n_users, config$n_newsposts_step )
+  
   # for all users
   for(user_id in 1:config$n_users){
     # generate top 10 recommendations 
     
-    #select currently relevant posts
-    n_current_posts <- config$n_newsposts+config$n_nesposts_step * steps
-    current_posts <- m[ ,1:n_current_posts]
-    
-    ui_matrix <- as(current_posts, "dgCMatrix")
-    trainingmatrix <- (new("realRatingMatrix", data = ui_matrix))
-    
-    rec_sys <- Recommender(trainingmatrix, method=config$recommender)
-    recoms <- recommenderlab::predict(rec_sys, trainingmatrix[user_id], n = 10)
-    res <- as(recoms, "list")
-    consumed_item <- NA
-    if(length(res[[1]])==0){
-      consumed_item <- round(runif(1, 1, config$n_newsposts))
+    #update recommendation after each user
+    if(config$update_for_user){
+      ui_matrix <- as(current_posts, "dgCMatrix")
+      trainingmatrix <- (new("realRatingMatrix", data = ui_matrix))
+      
+      rec_sys <- Recommender(trainingmatrix, method=config$recommender)
+      recoms <- recommenderlab::predict(rec_sys, trainingmatrix[user_id], n = 10)
+      res <- as(recoms, "list")
     } else {
-      consumed_item <- as.numeric(str_remove(res[[1]][[1]], "i"))
+      res <- as(recoms, "list")[user_id] #get recommendation from matrix per step
+    }
+    consumed_item <- NA
+    if(user_id %in% first_users){
+      #show user new item
+      consumed_item <- n_current_posts - config$n_newsposts_step + match(user_id, first_users)
+      #print(paste("Show item ", consumed_item , " to user ", user_id))
+    } else {
+      if(length(res[[1]])==0){
+        consumed_item <- round(runif(1, 1, n_current_posts))
+      } else {
+        consumed_item <- as.numeric(str_remove(res[[1]][[1]], "i"))
+      }
     }
     
     evaluation <- (cosine_matrix[user_id, consumed_item] * 5)
@@ -125,8 +148,8 @@ for (steps in 1:config$n_steps) {
   #decrease relevance of old news
   decay_matrix <- diag(c(rep(config$decay_factor, n_current_posts),rep(1, total_newsposts - n_current_posts)))
   
-  m <-t(decay_matrix %*% t(m))
-  colnames(m) <- paste("i", 1:total_newsposts, sep='')
+  m <-t(decay_matrix %*% t(m)) #transposed as dimensions won't fit otherwise
+  colnames(m) <- paste("i", 1:total_newsposts, sep='') #colnames lost after multiplication
   
   if(steps > 1){
     exposure[,steps] <- exposure[, steps] + exposure[, steps -1]

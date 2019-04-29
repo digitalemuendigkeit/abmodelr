@@ -2,7 +2,7 @@
 
 generate_news <- function(config){
   # create ids 
-  total_newsposts <-config$n_newsposts + config$n_nesposts_step * config$n_steps
+  total_newsposts <-config$n_newsposts + config$n_newsposts_step * config$n_steps
   news_ids <- 1:total_newsposts
   topic_relevances <- data.frame(news_ids)
   
