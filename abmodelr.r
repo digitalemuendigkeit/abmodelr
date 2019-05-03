@@ -137,7 +137,17 @@ for (steps in 1:config$n_steps) {
     
     
     # update user interests ----
-      
+    switch(config$update_user_interest,
+    none={
+      #users won't be updated
+    },
+    random={
+      #update users randomly
+    },
+    dominant={
+      #update dominant topic
+    }
+    )  
     
     
     # update exposure counts in each step for all recommendations
