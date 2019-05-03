@@ -153,7 +153,7 @@ for (steps in 1:config$n_steps) {
   
   if(steps > 1){
     exposure[,steps] <- exposure[, steps] + exposure[, steps -1]
-    image(trainingmatrix, main = "Normalized Ratings")
+    #image(trainingmatrix, main = "Normalized Ratings")
   }
 
   setTxtProgressBar(pb, steps)
@@ -169,7 +169,3 @@ results_data <- list(user = user,
                      exposure = exposure)
 rds_filename <- config$outputfilename
 write_rds(results_data, rds_filename)
-
-
-
-
