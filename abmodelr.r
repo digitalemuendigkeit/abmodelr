@@ -10,6 +10,8 @@ source("select_file.R")
 source("user_generation.R")
 source("posts_generation.R")
 
+set.seed(0)
+
 # User generation ----
 user <- generate_users(config)
 
