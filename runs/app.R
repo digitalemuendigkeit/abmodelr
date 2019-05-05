@@ -3,6 +3,9 @@ library(shiny)
 ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(
+      textInput("directory name for YAML files",
+        inputId = "dir_name"
+      ),
       textInput("project title", 
         inputId = "title"),
       numericInput("number of topics", 
@@ -49,58 +52,32 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
   
-  observeEvent(input$save, {
-    
-      filename <- here::here("jobs", paste0(toString(input$yaml_name), ".yml"))
-      
+  observeEvent(
+    input$save, 
+    {
+      dirname <- toString(input$dir_name)
+      dir.create(here::here("runs", dirname))
+      filename <- here::here("runs", dirname, paste0(toString(input$yaml_name), ".yml"))
       write(
         "---", 
         file = filename
       )  # begin writing YAML file
       write(
-        paste0("title: ", "\"", toString(input$title), "\""), 
+        paste0(
+          "title: ", "\"", toString(input$title), "\"", "\n",
+          "n_topics: ", toString(input$n_topics), "\n",
+          "n_users: ", toString(input$n_users), "\n",
+          "n_newsposts: ", toString(input$n_newsposts), "\n",
+          "n_newsposts_step: ", toString(input$n_newsposts_step), "\n",
+          "topic_limit: ", toString(input$topic_limit), "\n",
+          "decay_factor: ", toString(input$decay_factor), "\n",
+          "update_for_user: ", toString(input$update_for_user), "\n",
+          "n_steps: ", toString(input$n_steps), "\n",
+          "outputfilename: ", "\"", toString(input$output_file_name), ".rds\"", "\n",
+          "recommender: ", "\"", toString(input$recommender), "\""
+        ), 
         file = filename, append = TRUE
-      )  # title
-      write(
-        paste0("n_topics: ", toString(input$n_topics)), 
-        file = filename, append = TRUE
-      )
-      write(
-        paste0("n_users: ", toString(input$n_users)), 
-        file = filename, append = TRUE
-      )  # number of users
-      write(
-        paste0("n_newsposts: ", toString(input$n_newsposts)), 
-        file = filename, append = TRUE
-      )  # number of news posts
-      write(
-        paste0("n_newsposts_step: ", toString(input$n_newsposts_step)), 
-        file = filename, append = TRUE
-      )  # number of newspost steps
-      write(
-        paste0("topic_limit: ", toString(input$topic_limit)), 
-        file = filename, append = TRUE
-      )  # topic limit
-      write(
-        paste0("decay_factor: ", toString(input$decay_factor)), 
-        file = filename, append = TRUE
-      )  # decay factor
-      write(
-        paste0("update_for_user: ", toString(input$update_for_user)), 
-        file = filename, append = TRUE
-      )  # update for user (true or false)
-      write(
-        paste0("n_steps: ", toString(input$n_steps)), 
-        file = filename, append = TRUE
-      )  # number of steps
-      write(
-        paste0("outputfilename: ", "\"", toString(input$output_file_name), ".rds\""), 
-        file = filename, append = TRUE
-      )  # output file name
-      write(
-        paste0("recommender: ", "\"", toString(input$recommender), "\""), 
-        file = filename, append = TRUE
-      )  # recommender type
+      )  # write YAML body
       write(
         "---", 
         file = filename, append = TRUE
