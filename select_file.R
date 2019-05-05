@@ -8,16 +8,24 @@ config <- read_yaml("config.yml")
 
 
 load_config <- function(proj) {
+  #' read yaml files from a specified project directory
+  #' Args:
+  #'   proj: directory name within folder "runs"
+  #' Returns:
+  #'   list of attributes of different runs
   
+  # create lists
   file_list <- list.files(here::here("runs", proj))
   yaml_list <- list()
   
+  # read files and append to list
   for (i in file_list) {
     yaml_list <- rlist::list.append(yaml_list, read_yaml(here::here("runs", proj, i)))
   }
   
   names(yaml_list) <- file_list
   
+  # return list
   return (yaml_list)
   
 }
