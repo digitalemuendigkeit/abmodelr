@@ -12,6 +12,7 @@ decay_factor : 0.6 #factor that determines the decrease of relevance of news
 update_for_user : true #if true, training matrix will be updated after each users gets a prediciton, if false only once per step
 
 update_user_interest : "none" # none, random, dominant
+p_user_update : 0.5 #probability that a user updates his interest after reading a post
 
 n_steps : 50
 outputfilename : "default.rds"

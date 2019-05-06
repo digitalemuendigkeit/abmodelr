@@ -9,6 +9,7 @@ library(Matrix)
 source("select_file.R")
 source("user_generation.R")
 source("posts_generation.R")
+source("generate_cosine_matrix.R")
 
 set.seed(0)
 
@@ -22,16 +23,7 @@ news_posts <- generate_news(config)
 # initilize ground truth
 total_newsposts <-config$n_newsposts + config$n_newsposts_step  * config$n_steps
 
-user %>% select(starts_with("topic")) -> mat_user
-news_posts %>% select(starts_with("topic")) -> mat_posts
-cosine_matrix <- matrix(c(0), nrow = config$n_users, ncol = total_newsposts)
-for(i in 1:config$n_users) {
-  for(j in 1:total_newsposts) {
-    cosine_matrix[i,j] <- lsa::cosine(unlist(mat_user[i,]), unlist(mat_posts[j,]))
-  }
-}
-
-
+cosine_matrix <- generate_cosine_matrix(user, news_posts)
 
 
 #' Generate ground truth recommendation for a user_id from a cosine similariy matrix
@@ -143,17 +135,28 @@ for (steps in 1:config$n_steps) {
     },
     random={
       #update users randomly
+      if(rbinom(n=1, size=1, prob=config$p_user_update)){
+        user[user_id,2:(config$n_topics+1)] <-user[user_id,2:(config$n_topics+1)]+news_posts[consumed_item,(config$n_topics+1)]
+        #norm users interests
+        user[user_id,2:(config$n_topics+1)] <- user[user_id,2:(config$n_topics+1)] / sum(user[user_id,2:(config$n_topics+1)]) *user$interest_ressource[user_id]
+      }
     },
     dominant={
       #update dominant topic
+      #find dominant topic
+      dominant <- which.max(news_posts[consumed_item,2:(config$n_topics+1)])
+      #indices shifted by 1 because first column is ID
+      user[user_id, dominant+1] <- user[user_id, dominant+1] + news_posts[consumed_item, dominant+1]
+      #norm users interests
+      user[user_id,2:(config$n_topics+1)] <- user[user_id,2:(config$n_topics+1)] / sum(user[user_id,2:(config$n_topics+1)]) *user$interest_ressource[user_id]
     }
     )  
     
     
     # update exposure counts in each step for all recommendations
     
-      exposure[consumed_item, steps] + 1 -> temp
-      exposure[consumed_item, steps] <- temp
+    exposure[consumed_item, steps] + 1 -> temp
+    exposure[consumed_item, steps] <- temp
     
   }
   
@@ -167,7 +170,11 @@ for (steps in 1:config$n_steps) {
     exposure[,steps] <- exposure[, steps] + exposure[, steps -1]
     #image(trainingmatrix, main = "Normalized Ratings")
   }
-
+  
+  if(config$update_user_interest != "none"){
+    #update cosine matrix
+    cosine_matrix <- generate_cosine_matrix(user, news_posts)
+  }
   setTxtProgressBar(pb, steps)
 }
 close(pb)
