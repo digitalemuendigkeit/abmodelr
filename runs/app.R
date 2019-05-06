@@ -158,10 +158,19 @@ server <- function(input, output, session) {
     {
       # directory and file names
       dirname <- toString(input$dir_name)
-      if (!is.element(list.dirs(here::here("runs")), here::here("runs", dirname))) {
-        dir.create(here::here("runs", dirname))
+      if (
+        !is.element(
+          list.dirs(here::here("runs", "projects")), 
+          here::here("runs", "projects", dirname)
+        )
+      ) {
+        dir.create(here::here("runs", "projects", dirname))
+        dir.create(here::here("runs", "projects", dirname, "yaml_setup"))
       }  # test if directory already exists before creating it
-      filename <- here::here("runs", dirname, paste0(toString(input$yaml_name), ".yml"))
+      filename <- here::here(
+        "runs", "projects", dirname, "yaml_setup", 
+        paste0(toString(input$yaml_name), ".yml")
+      )
       
       # write YAML file
       write(
