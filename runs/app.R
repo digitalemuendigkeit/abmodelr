@@ -25,31 +25,33 @@ ui <- navbarPage(
       column(3, 
         textInput(
           "output file name (no spaces!)", inputId = "output_file_name")
-      ),
+      )
     ),
+    br(), br(), br(),
     fluidRow(
       column(3,
         sliderInput(
           "number of users", inputId = "n_users", 
           min = 10, max = 2000, value = 10, step = 1)
         ),
-      column(
-        3, 
-        numericInput(
+      column(3, 
+        sliderInput(
           "number of topics", inputId = "n_topics", 
           min = 2, max = 30, value = 2, step = 1)
         ),
-        column(3, 
-               sliderInput(
-                 "number of news posts", inputId = "n_newsposts", 
-                 min = 10, max = 3000, value = 10, step = 1)      
-        ),
-        column(3,
-               sliderInput(
-                 "topic limit", inputId = "topic_limit", 
-                 min = 3, max = 30, value = 3, step = 1)
-        )
+      column(3, 
+        sliderInput(
+          "number of news posts", inputId = "n_newsposts", 
+          min = 10, max = 3000, value = 10, step = 1)      
       ),
+      column(3,
+        sliderInput(
+          "topic limit", inputId = "topic_limit", 
+          min = 3, max = 30, value = 3, step = 1)
+      )
+    ),
+    br(), br(), br(),
+    fluidRow(
       column(4,
         sliderInput(
           "number of steps", inputId = "n_newsposts_step", 
@@ -64,7 +66,10 @@ ui <- navbarPage(
         sliderInput(
           "number of simulation steps", inputId = "n_steps", 
           min = 30, max = 200, value = 30, step = 1)      
-      ),
+      )
+    ),
+    br(), br(), br(),
+    fluidRow(
       column(6,
         radioButtons(
           "update for user?", inputId = "update_for_user", 
@@ -73,7 +78,7 @@ ui <- navbarPage(
       column(6,
         radioButtons(
           "type of recommender algorithm", inputId = "recommender", 
-          choices = c("UBCF", "IBCF", "POPULAR"))        
+          choices = c("UBCF", "IBCF", "POPULAR"))  
       )
     )
   ),
