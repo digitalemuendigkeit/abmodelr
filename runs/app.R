@@ -1,63 +1,105 @@
 library(shiny)
 
-ui <- fluidPage(
-  sidebarLayout(
-    sidebarPanel(
-      textInput("directory name for YAML files",
-        inputId = "dir_name"
+ui <- navbarPage(
+  title = "Create Experiment",
+  tabPanel(
+    title = "Setup",
+    fluidRow(
+      column(3,
+        textInput(
+          "directory name for YAML files", inputId = "dir_name")
       ),
-      textInput("project title", 
-        inputId = "title"),
-      numericInput("number of topics", 
-        inputId = "n_topics", 
-        min = 2, max = 30, value = 2),
-      numericInput("number of users", 
-        inputId = "n_users", 
-        min = 10, max = 2000, value = 10),
-      numericInput("number of news posts", 
-        inputId = "n_newsposts", 
-        min = 10, max = 3000, value = 10),
-      sliderInput("number of steps", 
-        inputId = "n_newsposts_step", 
-        min = 5, max = 10, step = 1, value = 5),
-      numericInput("topic limit", 
-        inputId = "topic_limit", 
-        min = 3, max = 30, value = 3),
-      sliderInput("decay factor", 
-        inputId = "decay_factor", 
-        min = 0, max = 1, step = 0.01, value = 0.5),
-      radioButtons("update for user?", 
-        inputId = "update_for_user", 
-        choices = c("true", "false")),
-      sliderInput("number of simulation steps",
-        inputId = "n_steps",
-        min = 30, max = 200, value = 30
+      column(3, 
+        textInput(
+          "name of YAML file (no spaces!)", inputId = "yaml_name") 
+      )
+    )
+  ),
+  tabPanel(
+    title = "Set Parameters",
+    fluidRow(
+      column(3, 
+        textInput(
+          "project title", inputId = "title")
       ),
-      textInput("output file name (no spaces!)", 
-        inputId = "output_file_name"),
-      radioButtons("type of recommender algorithm", 
-        inputId = "recommender", 
-        choices = c("UBCF", "IBCF", "POPULAR")),
-      textInput("name of YAML file (no spaces!)",
-        inputId = "yaml_name"
+      column(3, 
+        textInput(
+          "output file name (no spaces!)", inputId = "output_file_name")
       ),
-      actionButton("save", 
-        inputId = "save")
     ),
-    mainPanel(
-      # TO DO: display control yaml
+    fluidRow(
+      column(3,
+        sliderInput(
+          "number of users", inputId = "n_users", 
+          min = 10, max = 2000, value = 10, step = 1)
+        ),
+      column(
+        3, 
+        numericInput(
+          "number of topics", inputId = "n_topics", 
+          min = 2, max = 30, value = 2, step = 1)
+        ),
+        column(3, 
+               sliderInput(
+                 "number of news posts", inputId = "n_newsposts", 
+                 min = 10, max = 3000, value = 10, step = 1)      
+        ),
+        column(3,
+               sliderInput(
+                 "topic limit", inputId = "topic_limit", 
+                 min = 3, max = 30, value = 3, step = 1)
+        )
+      ),
+      column(4,
+        sliderInput(
+          "number of steps", inputId = "n_newsposts_step", 
+          min = 5, max = 10, value = 5, step = 1)        
+      ),
+      column(4,
+        sliderInput(
+          "decay factor", inputId = "decay_factor", 
+          min = 0, max = 1, value = 0.5, step = 0.01)
+      ),
+      column(4,
+        sliderInput(
+          "number of simulation steps", inputId = "n_steps", 
+          min = 30, max = 200, value = 30, step = 1)      
+      ),
+      column(6,
+        radioButtons(
+          "update for user?", inputId = "update_for_user", 
+          choices = c("true", "false"))
+      ),
+      column(6,
+        radioButtons(
+          "type of recommender algorithm", inputId = "recommender", 
+          choices = c("UBCF", "IBCF", "POPULAR"))        
+      )
+    )
+  ),
+  tabPanel(
+    title = "Review Settings",
+    fluidPage(
+      actionButton(
+        "save", inputId = "save")      
     )
   )
 )
+
 
 server <- function(input, output, session) {
   
   observeEvent(
     input$save, 
     {
+      # directory and file names
       dirname <- toString(input$dir_name)
-      dir.create(here::here("runs", dirname))
+      if (!is.element(list.dirs(here::here("runs")), here::here("runs", dirname))) {
+        dir.create(here::here("runs", dirname))
+      }  # test if directory already exists before creating it
       filename <- here::here("runs", dirname, paste0(toString(input$yaml_name), ".yml"))
+      
+      # write YAML file
       write(
         "---", 
         file = filename
