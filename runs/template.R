@@ -8,7 +8,11 @@ library(Matrix)
 
 source(here::here("runs", "helpers.R"))
 
-set.seed(0)
+# load config file
+
+
+# set random seed
+
 
 # User generation ----
 user <- generate_users(config)
@@ -52,9 +56,9 @@ m <- matrix(
 ui_matrix <- as(m, "dgCMatrix")
 trainingmatrix <- (new("realRatingMatrix", data = ui_matrix))
 
-#getRatingMatrix(trainingmatrix)
-#image(trainingmatrix, main = "Normalized Ratings")
-#hist(getRatings(trainingmatrix), breaks=100)
+# getRatingMatrix(trainingmatrix)
+# image(trainingmatrix, main = "Normalized Ratings")
+# hist(getRatings(trainingmatrix), breaks = 100)
 
 # create a basic recommendation algorithm
 generate_topn_rec <- function(user_id, cosine_matrix, n = 1) {
@@ -188,5 +192,3 @@ results_data <- list(
   exposure = exposure
 )
 
-rds_filename <- config$outputfilename
-write_rds(results_data, rds_filename)
