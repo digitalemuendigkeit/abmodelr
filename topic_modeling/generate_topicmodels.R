@@ -179,7 +179,7 @@ models %>% pull(ctm_beta) %>% `[[`(3)  %>% group_by(topic) %>% top_n(10, beta) %
   spread(rank, term)
 
 ### sav the covariance matrix for topic model generation in ABM
-topic_count <- 3
+topic_count <- 7
 models %>% filter(k == topic_count) %>% 
   unique() %>% 
   pull(covmat) %>% 
