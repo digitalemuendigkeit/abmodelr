@@ -158,3 +158,107 @@ generate_cosine_matrix <- function(user, news_posts) {
   return (cosine_matrix)
   
 }
+
+initialize_project <- function(n_iterations, n_conditions, project_name, rndm_seeds) {
+  #' automatically write R-scripts for simulation runs
+  #' 
+  #' @param n_iterations number of simulation iterations
+  #' @param n_conditions number of experimental conditions
+  #' @param project_name name of the simulation project
+  #' @param rndm_seeds list of normally distributed random seeds
+  
+  # set maximum number of iterations
+  if (n_iterations > 50) {
+    print("Please consider doing less iterations (your computer will thank you for it!")
+    return (FALSE)
+  }
+  
+  # create directory to store results
+  dir.create(here::here("runs", "projects", toString(project_name), "results"))
+  
+  
+  for (i in 1:length(config_length)) {
+    
+    cond <- i
+    
+    path <- here::here(
+      "runs", "projects", toString(project_name), 
+      paste0("cond-", toString(cond), ".R")
+    )
+    
+    write(paste0("", "\n"), file = path)
+    
+    for (j in 1:n_iterations) {
+      
+      iteration <- j
+      
+      # open connection to template file
+      con_tmpl <- file(here::here("runs", "template.R"), "r+")
+      lines_tmpl <- readLines(con_tmpl)
+      
+      # write libraries
+      write(
+        lines_tmpl[1:11],
+        file = path,
+        append = TRUE
+      )
+      
+      # write loading of config file
+      write(
+        paste0(
+          "config <- load_config(\"", project_name, 
+          "\")[[\"", "cond-", toString(cond), ".yml", "\"]]", "\n"
+        ),
+        file = path,
+        append = TRUE
+      )
+      
+      # write setting of random seed
+      write(
+        lines_tmpl[14],
+        file = path,
+        append = TRUE
+      )
+      
+      write(
+        paste0(
+          "set.seed(", toString(rndm_seeds[j]), ")", "\n"
+        ),
+        file = path,
+        append = TRUE
+      )
+      
+      # write body of script
+      write(
+        lines_tmpl[16:194],
+        file = path,
+        append = TRUE
+      )
+      
+      # write file saving
+      write(
+        paste0(
+          "rds_filename <- paste0(\"", toString(cond), "-", toString(iteration), 
+          "\", \"-\", ", "config$outputfilename)", "\n", "write_rds(", 
+          "path = here::here(", "\"runs\", \"projects\", \"", toString(project_name), 
+          "\", \"results\"), x = results_data)", "\n"
+        ),
+        file = path,
+        append = TRUE
+      )
+      
+      # write cleaning up environment
+      write(
+        paste0("\n", "rm(list = ls())", "\n", "\n"),
+        file = path,
+        append = TRUE
+      )
+      
+      # close connection to template file
+      close(con_tmpl)
+      
+    }
+      
+  }
+
+}
