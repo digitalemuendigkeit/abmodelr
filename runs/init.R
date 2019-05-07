@@ -78,7 +78,7 @@ exposure <- matrix(c(0), nrow = total_newsposts, ncol = config$n_steps)
 
 # run all simulation steps
 pb <- txtProgressBar(min = 0, max = config$n_steps, initial = 0, char = "=",
-               width = NA, title="Simulation Run", label, style = 3, file = "")
+                     width = NA, title="Simulation Run", label, style = 3, file = "")
 for (steps in 1:config$n_steps) {
   
   #select currently relevant posts
@@ -130,26 +130,26 @@ for (steps in 1:config$n_steps) {
     
     # update user interests ----
     switch(config$update_user_interest,
-    none={
-      #users won't be updated
-    },
-    random={
-      #update users randomly
-      if(rbinom(n=1, size=1, prob=config$p_user_update)){
-        user[user_id,2:(config$n_topics+1)] <-user[user_id,2:(config$n_topics+1)]+news_posts[consumed_item,(config$n_topics+1)]
-        #norm users interests
-        user[user_id,2:(config$n_topics+1)] <- user[user_id,2:(config$n_topics+1)] / sum(user[user_id,2:(config$n_topics+1)]) *user$interest_ressource[user_id]
-      }
-    },
-    dominant={
-      #update dominant topic
-      #find dominant topic
-      dominant <- which.max(news_posts[consumed_item,2:(config$n_topics+1)])
-      #indices shifted by 1 because first column is ID
-      user[user_id, dominant+1] <- user[user_id, dominant+1] + news_posts[consumed_item, dominant+1]
-      #norm users interests
-      user[user_id,2:(config$n_topics+1)] <- user[user_id,2:(config$n_topics+1)] / sum(user[user_id,2:(config$n_topics+1)]) *user$interest_ressource[user_id]
-    }
+           none={
+             #users won't be updated
+           },
+           random={
+             #update users randomly
+             if(rbinom(n=1, size=1, prob=config$p_user_update)){
+               user[user_id,2:(config$n_topics+1)] <-user[user_id,2:(config$n_topics+1)]+news_posts[consumed_item,(config$n_topics+1)]
+               #norm users interests
+               user[user_id,2:(config$n_topics+1)] <- user[user_id,2:(config$n_topics+1)] / sum(user[user_id,2:(config$n_topics+1)]) *user$interest_ressource[user_id]
+             }
+           },
+           dominant={
+             #update dominant topic
+             #find dominant topic
+             dominant <- which.max(news_posts[consumed_item,2:(config$n_topics+1)])
+             #indices shifted by 1 because first column is ID
+             user[user_id, dominant+1] <- user[user_id, dominant+1] + news_posts[consumed_item, dominant+1]
+             #norm users interests
+             user[user_id,2:(config$n_topics+1)] <- user[user_id,2:(config$n_topics+1)] / sum(user[user_id,2:(config$n_topics+1)]) *user$interest_ressource[user_id]
+           }
     )  
     
     
