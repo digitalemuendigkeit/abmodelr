@@ -7,6 +7,12 @@ library(ldatuning)
 library(topicmodels)
 library(purrr)
 
+### WARNING
+
+## Runtime of CTM is O(k^3). Do not use to large topic models. The document size
+
+# How man randomized local starts to use
+rand_local_starts <- 1
 # How many documents to include
 doc_size <- 200
 # How many topics to model
@@ -83,7 +89,7 @@ control_list_ctm <- list(
   # random start
   seed = NA, 
   # multistart local search from 1 location (faster, potential local optimum)
-  nstart = 1,
+  nstart = rand_local_starts,
   # output all 2 CG iterations
   verbose = 2,
   # Stop after 500 iterations
