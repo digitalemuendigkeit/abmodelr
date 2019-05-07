@@ -9,7 +9,7 @@ write(
 )
 
 write(
-  Lines,
+  Lines[1:12],
   file = here::here("runs", "bla.R"),
   append = TRUE
 )

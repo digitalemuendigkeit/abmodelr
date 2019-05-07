@@ -1,0 +1,15 @@
+---
+title: "blabla"
+n_topics: 13
+n_users: 10
+n_newsposts: 10
+n_newsposts_step: 5
+topic_limit: 3
+decay_factor: 0.5
+update_for_user: true
+update_user_interest: "none"
+p_user_update: 0.5
+n_steps: 30
+outputfilename: "blanasdkjh.rds"
+recommender: "UBCF"
+---
