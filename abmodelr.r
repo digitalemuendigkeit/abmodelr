@@ -7,6 +7,8 @@ library(recommenderlab)
 library(Matrix)
 
 source("select_file.R")
+total_newsposts <- config$n_newsposts + config$n_newsposts_step  * config$n_steps
+
 source("user_generation.R")
 source("posts_generation.R")
 source("generate_cosine_matrix.R")
@@ -21,7 +23,7 @@ news_posts <- generate_news(config)
 
 
 # initilize ground truth
-total_newsposts <-config$n_newsposts + config$n_newsposts_step  * config$n_steps
+total_newsposts <- config$n_newsposts + config$n_newsposts_step  * config$n_steps
 
 cosine_matrix <- generate_cosine_matrix(user, news_posts)
 
