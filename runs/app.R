@@ -10,30 +10,29 @@ ui <- navbarPage(
         textInput(
           "directory name for YAML files", inputId = "dir_name")
       )
-    )
-  ),
-  tabPanel(
-    title = "Set Parameters",
-    h4("General Settings"),
-    br(),
+    ),
     fluidRow(
       column(3, 
         textInput(
           "project title", inputId = "title")
-      ),
+      )
+    ),
+    fluidRow(
       column(3, 
         textInput(
           "output file name (no spaces!)", inputId = "output_file_name")
       )
-    ),
-    hr(),
+    )
+  ),
+  tabPanel(
+    title = "Set Parameters",
     h4("Setup Parameters"), 
     br(),
     fluidRow(
       column(3,
         sliderInput(
           "number of users", inputId = "n_users", 
-          min = 10, max = 2000, value = 10, step = 1)
+          min = 10, max = 2000, value = 10, step = 10)
         ),
       column(3, 
         sliderInput(
@@ -43,7 +42,7 @@ ui <- navbarPage(
       column(3, 
         sliderInput(
           "number of initial news posts", inputId = "n_newsposts", 
-          min = 10, max = 3000, value = 10, step = 1)      
+          min = 10, max = 3000, value = 10, step = 10)      
       ),
       column(3,
         sliderInput(
