@@ -11,12 +11,17 @@ library(purrr)
 
 ## Runtime of CTM is O(k^3). Do not use to large topic models. The document size
 
+## Note:
+# RLS = 5
+# doc_size = 1000
+# para 3,5,7,9 takes 2:23:44 on i7 2.2ghz single core process
+
 # How man randomized local starts to use
-rand_local_starts <- 1
+rand_local_starts <- 5
 # How many documents to include
-doc_size <- 200
+doc_size <- 1000
 # How many topics to model
-para <- tibble(k = c(3,5,7))
+para <- tibble(k = c(3,5,7,9))
 
 data <- read_csv("topic_modeling/all-the-news/articles1.csv", col_types = "ddccccddcc")
 data <- read_csv("topic_modeling/all-the-news/articles2.csv", col_types = "ddccccddcc") %>% bind_rows(data)
@@ -29,7 +34,7 @@ data %>% ggplot() + aes(x=publication) + geom_bar() + coord_flip() + labs(title=
 
 
 # Paralelization prep
-max(parallel::detectCores() -1, 10) -> cores_count
+max(parallel::detectCores() -1, 8) -> cores_count
 
 
 # Load a list of stopwords
@@ -84,10 +89,12 @@ lemmatized_cln <- lemmatized_counts %>%
 
 dtm <- lemmatized_cln %>% cast_dtm(title, word, n)
 
+temp_model <- LDA(dtm, 9)
+
 ### Topic modelling
 control_list_ctm <- list(
   # random start
-  seed = NA, 
+  seed = rep(NA, rand_local_starts), 
   # multistart local search from 1 location (faster, potential local optimum)
   nstart = rand_local_starts,
   # output all 2 CG iterations
@@ -160,6 +167,8 @@ models <- models %>% mutate(covmat = map(.x= ctm_gamma, .f=tidy_cov_mat_from_gam
 
 write_rds(models, "topic_modeling/topicmodels.rds")
 
+models <- read_rds("topic_modeling/topicmodels.rds")
+
 # Plotting gamma distributions 
 plot_gamma_dist <- function(gamma_matrix, name) {
   p <- gamma_matrix %>% 
@@ -172,7 +181,7 @@ models %>% pull(ctm_gamma) %>% map(.f = plot_gamma_dist)
 
 
 ## Select a model to visualize the top terms
-models %>% pull(ctm_beta) %>% `[[`(3)  %>% group_by(topic) %>% top_n(10, beta) %>% 
+models %>% pull(ctm_beta) %>% `[[`(4)  %>% group_by(topic) %>% top_n(10, beta) %>% 
   arrange(topic, -beta) %>% mutate( rank = row_number()) %>% 
   ungroup() %>%
   select(-beta) %>% 
@@ -184,10 +193,12 @@ models %>% filter(k == topic_count) %>%
   unique() %>% 
   pull(covmat) %>% 
   unlist() %>% 
-  matrix(nrow=topic_count) %>% write_rds("covmat.rds")
+  matrix(nrow=topic_count) 
 
 
 
 
 ### look at http://www.bernhardlearns.com/2017/05/topic-models-lda-and-ctm-in-r-with.html for ctm explanation
 library(topicmodels)
+
+models$covmat

@@ -32,6 +32,6 @@ df <- as_tibble(exposure) %>%
 
 df %>% ggplot() +
   aes(x = step, y = value, color = news_post) +
-  geom_line() +
+  geom_line(alpha = 0.1) +
   guides(color = FALSE) 
 

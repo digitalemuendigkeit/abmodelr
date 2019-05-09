@@ -1,6 +1,6 @@
 ---
 title : "This is a demo simulation for only a few topics and a few users"
-n_topics : 2
+n_topics : 7
 n_users : 200
 
 n_newsposts : 50 #number of initial posts
@@ -14,7 +14,7 @@ update_for_user : true #if true, training matrix will be updated after each user
 update_user_interest : "none" # none, random, dominant
 p_user_update : 0.5 #probability that a user updates his interest after reading a post
 
-n_steps : 50
+n_steps : 500
 outputfilename : "default.rds"
 
 recommender : "UBCF"
