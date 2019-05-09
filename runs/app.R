@@ -1,4 +1,9 @@
 library(shiny)
+library(shinyBS)
+
+popup_text <- paste("None: User interest will not get updated at all.",
+                  "Random: Users interest of all topics the news post contains get updated with a probability.",
+                  "Dominant: Only the dominant topic of the news post will be updated in the users interest.", sep = "<br>")
 
 ui <- navbarPage(
   title = "Create Experiment",
@@ -91,7 +96,9 @@ ui <- navbarPage(
         radioButtons(
           "user interest update method", inputId = "update_user_interest",
           choices = c("none", "random", "dominant")
-        )
+        ),
+        bsPopover("update_user_interest", title = "Options", content = popup_text,
+                  placement = "right", trigger = "hover", options = list(container = "body"))
       ),
       column(3,
         sliderInput(
