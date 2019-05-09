@@ -1,10 +1,10 @@
 library(shiny)
 library(shinyBS)
 
-popup_text_user_update <- paste("<b>None</b>: User interest will not get updated at all.",
+popup_text_user_update <- paste("<b>None</b>: User interest does not get updated at all.",
                   "<b>Random</b>: Users interest of all topics the news post contains get updated with a probability on the right.",
                   "<b>Dominant</b>: Only the dominant topic of the news post will be updated in the users interest.", sep = "<br>")
-popup_text_update_for_user <- paste("<b>True</b>: Recommendation matrix gets updated every time a user consumed an item.",
+popup_text_update_for_user <- paste("<b>True</b>: Recommendation matrix gets updated every time a user consumes an item.",
                             "<b>False</b>: Recommendation matrix only gets updated once per step.", sep = "<br>")
 
 ui <- navbarPage(
