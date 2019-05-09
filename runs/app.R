@@ -74,7 +74,9 @@ ui <- navbarPage(
       column(3,
         sliderInput(
           "decay factor", inputId = "decay_factor", 
-          min = 0, max = 1, value = 0.5, step = 0.01)
+          min = 0, max = 1, value = 0.5, step = 0.01),
+        bsTooltip("decay_factor", "The smaller the factor, the faster news posts lose their relevance.",
+                  placement = "bottom", trigger = "hover")
       )
     ),
     br(),
