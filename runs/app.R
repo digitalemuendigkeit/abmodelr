@@ -1,9 +1,11 @@
 library(shiny)
 library(shinyBS)
 
-popup_text <- paste("None: User interest will not get updated at all.",
-                  "Random: Users interest of all topics the news post contains get updated with a probability.",
+popup_text_user_update <- paste("None: User interest will not get updated at all.",
+                  "Random: Users interest of all topics the news post contains get updated with a probability on the right.",
                   "Dominant: Only the dominant topic of the news post will be updated in the users interest.", sep = "<br>")
+popup_text_update_for_user <- paste("True: recommendation Matrix gets updated every time a user consumed an item.",
+                            "False: recommendation matrix only gets updated once per step.", sep = "<br>")
 
 ui <- navbarPage(
   title = "Create Experiment",
@@ -80,7 +82,9 @@ ui <- navbarPage(
       column(3,
              radioButtons(
                "update for user?", inputId = "update_for_user", 
-               choices = c("true", "false"))
+               choices = c("true", "false")),
+             bsPopover("update_for_user", title = "Options", content = popup_text_update_for_user,
+                       placement = "right", trigger = "hover", options = list(container = "body"))
       ),
       column(3,
              radioButtons(
@@ -97,7 +101,7 @@ ui <- navbarPage(
           "user interest update method", inputId = "update_user_interest",
           choices = c("none", "random", "dominant")
         ),
-        bsPopover("update_user_interest", title = "Options", content = popup_text,
+        bsPopover("update_user_interest", title = "Options", content = popup_text_user_update,
                   placement = "right", trigger = "hover", options = list(container = "body"))
       ),
       column(3,
