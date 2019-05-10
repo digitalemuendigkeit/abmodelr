@@ -1,39 +1,51 @@
 library(shiny)
 library(shinyBS)
 
+# Messages ----
 popup_text_user_update <- paste("<b>None</b>: Users interest do not get updated at all.",
                   "<b>Random</b>: Users interests of all topics the news post contains get updated with a probability on the right.",
                   "<b>Dominant</b>: Only the dominant topic of the news post will be updated in the users interests.", sep = "<br>")
 popup_text_update_for_user <- paste("<b>True</b>: Recommendation matrix gets updated every time a user consumes an item.",
                             "<b>False</b>: Recommendation matrix only gets updated once per step.", sep = "<br>")
 
-ui <- navbarPage(
+
+counter <- 1
+
+# UI Begin ----
+ui <- navbarPage(id = "inTabSet",
   title = "Create Experiment",
+  # Create Experiment Panel ----
   tabPanel(
     title = "Setup",
     h4("Project Setup"), br(),
     fluidRow(
       column(3,
         textInput(
-          "directory name for YAML files", inputId = "dir_name")
+          "directory name for YAML files", inputId = "dir_name", placeholder = "my_project", value="test")
       )
     ),
     fluidRow(
       column(3, 
         textInput(
-          "project title", inputId = "title")
+          "project title", inputId = "title", placeholder = "A description", value = "")
       )
     ),
     fluidRow(
       column(3, 
         textInput(
-          "output file name (no spaces!)", inputId = "output_file_name")
+          "output file name (no spaces!)", inputId = "output_file_name", value = "output")
       )
+    ),
+    fluidRow(
+      column(12,
+             actionButton(inputId = "goto_params", label = "Continue"))
     )
   ),
-  tabPanel(
+  
+  # Parameters Panel ----
+  tabPanel(value = "params",
     title = "Set Parameters",
-    h4("Setup Parameters"), 
+    h4("Setup Parameters"), actionButton(inputId = "finish", label = "Save Settings"),
     br(),
     fluidRow(
       column(3,
@@ -114,37 +126,36 @@ ui <- navbarPage(
       )
     )
   ),
+  
+  # Create Job Panel ----
   tabPanel(
     title = "Review Settings",
-    h2("Are all the settings correct?"),
+    value = "review",
+    h2("Are all the settings correct?"), 
+    hr(), 
+    h4("Save as:"),
+    fluidRow(
+      column(3,
+             p(textOutput("filemessage")),
+             actionButton(
+               inputId = "save", label = "Add Condition"),
+             br()
+      )
+    ),
     fluidRow(
       verbatimTextOutput("yaml_test")
     ), 
-    hr(), 
-    h4("Save as:"),
-    p("(\".yml\" file ending will be added automatically)"),
     fluidRow(
-      column(3, 
-        textInput(
-          "(no spaces!)", inputId = "yaml_name")
-      )
-    ),
-    fluidRow(
-      column(3, 
-        actionButton(
-          "save", inputId = "save") 
-      )
-    ),
     br(),
-    p("If you want to create another run setup for this project, change the settings 
-      in the \"Set Parameters\" tab and proceed by saving again"),
+    p("If you want to finish this project, close the app!"),
     br(), br(), br()
+    )
   )
 )
 
-
+# Server ----
 server <- function(input, output, session) {
-  
+  values <- reactiveValues(count = 1)
   output$yaml_test <- renderText({
     paste0(
       "---", "\n",
@@ -165,9 +176,33 @@ server <- function(input, output, session) {
     )
   })
 
+  # Buttons
   observeEvent(
-    input$save, 
+    input$goto_params,
     {
+      updateTabsetPanel(session, "inTabSet",
+                        selected = paste0("params"))
+    }
+  )
+
+  observeEvent(
+    input$finish,
+    {
+      updateTabsetPanel(session, "inTabSet",
+                        selected = paste0("review"))
+    }
+  )
+  
+  
+  # Render Text file name ----
+  output$filemessage <- renderText({
+    paste0("Filename: cond-",values$count ,".yml")
+  })
+  
+  # Event Save ----
+  observeEvent( input$save, 
+    {
+      
       # directory and file names
       dirname <- toString(input$dir_name)
       if (
@@ -181,7 +216,7 @@ server <- function(input, output, session) {
       }  # test if directory already exists before creating it
       filename <- here::here(
         "runs", "projects", dirname, "yaml_setup", 
-        paste0(toString(input$yaml_name), ".yml")
+        paste0("cond-",values$count, ".yml")
       )
       
       # write YAML file
@@ -211,7 +246,12 @@ server <- function(input, output, session) {
         "---", 
         file = filename, append = TRUE
       )  # end writing YAML file
+    
 
+      values$count <- values$count + 1
+      message( )
+      updateTabsetPanel(session, "inTabSet",
+                        selected = paste0("params"))
     }
     
   )
