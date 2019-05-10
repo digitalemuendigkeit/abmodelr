@@ -5,6 +5,7 @@ library(yaml)
 library(rstudioapi)
 library(recommenderlab)
 library(Matrix)
+library(broom)
 
 source("select_file.R")
 total_newsposts <- config$n_newsposts + config$n_newsposts_step  * config$n_steps
@@ -79,6 +80,8 @@ generate_topn_rec <- function(user_id, cosine_matrix, n = 1) {
 # generate an empty exposure matrix with rownumbers = posts , colnumbers = simulationsteps
 exposure <- matrix(c(0), nrow = total_newsposts, ncol = config$n_steps)
 
+#list to store user interest for evaluation later on
+user_record <- list()
 
 # run all simulation steps
 pb <- txtProgressBar(min = 0, max = config$n_steps, initial = 0, char = "=",
@@ -179,6 +182,12 @@ for (steps in 1:config$n_steps) {
     #update cosine matrix
     cosine_matrix <- generate_cosine_matrix(user, news_posts)
   }
+  
+  #keep record of users' interest
+  tidy(summarytools::descr(user)[1:7,]) %>%
+    column_to_rownames(".rownames") %>%
+    select(starts_with("topic")) -> user_record[[steps]]
+  
   setTxtProgressBar(pb, steps)
 }
 close(pb)
@@ -189,6 +198,7 @@ close(pb)
 # save results 
 results_data <- list(user = user, 
                      news_posts = news_posts, 
-                     exposure = exposure)
+                     exposure = exposure,
+                     user_record = user_record)
 rds_filename <- config$outputfilename
 write_rds(results_data, rds_filename)
