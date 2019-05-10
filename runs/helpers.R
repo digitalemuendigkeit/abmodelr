@@ -159,7 +159,7 @@ generate_cosine_matrix <- function(user, news_posts) {
   
 }
 
-initialize_project <- function(n_iterations, n_conditions, project_name, rndm_seeds) {
+initialize_project <- function(n_iterations, n_conditions, project_name, rndm_seeds, copy_location = NULL) {
   #' automatically write R-scripts for simulation runs
   #' 
   #' @param n_iterations number of simulation iterations
@@ -241,7 +241,7 @@ initialize_project <- function(n_iterations, n_conditions, project_name, rndm_se
           "rds_filename <- paste0(\"", toString(cond), "-", toString(iteration), 
           "\", \"-\", ", "config$outputfilename)", "\n", "write_rds(", 
           "path = here::here(", "\"runs\", \"projects\", \"", toString(project_name), 
-          "\", \"results\"), x = results_data)", "\n"
+          "\", \"results\", rds_filename), x = results_data)", "\n"
         ),
         file = path,
         append = TRUE
@@ -260,33 +260,28 @@ initialize_project <- function(n_iterations, n_conditions, project_name, rndm_se
     }
       
   }
-
-}
-
-
-
-ResetR = function() {
   
-  # 1) Remove all objects
-  rm(list = ls(all=TRUE, envir = .GlobalEnv), envir = .GlobalEnv)
-  
-  # 2) Unload non-native packages. 
-  nat = c(".GlobalEnv", "package:datasets", "package:evd", "package:nortest", "package:MASS", "package:stats", "package:graphics", "package:grDevices", "package:utils", "package:methods", "Autoloads", "package:base")
-  
-  p = search()
-  for (i in p) {
-    if (is.na(match(i, nat))) {
-      try(eval(parse(text=paste0("detach(", i, ", unload=T, force=T)"))), silent=T) # force=T is need in case package has dependency
-    }
+  # write the runner file
+  if(!is.null(copy_location)){
+    
+    cmd <- paste0("file.copy(from = here::here(\"runs\", \"projects\", \"",toString(project_name),"\"), recursive = T, to=\"",copy_location,"\")")
+    
+  } else {
+    cmd <- ""
   }
+  path <- here::here("runs", "projects", toString(project_name), 
+    paste0("runner.R"))
   
-  # 3) Close all connections
-  try(closeAllConnections(), silent=T)
-  
-  # 4) Restore default options
-  try(options(baseenv()$.Options2), silent=T) # Remember to put assign(".Options2", options(), baseenv()) at the bottom of YOUR_R_HOME\etc\Rprofile.site
-  
-  # 5) Close all graphic devices
-  graphics.off()
-  
+  # Generate runner file
+  code <- c("# This is a runner file to be started as a job in RStudio")
+  for (i in 1:length(config_length)){
+    code <- c(code,paste0( 
+    "source(here::here(\"runs\", \"projects\", \"",toString(project_name),"\", \"cond-",i,".R\"))"))
+    code <- c(code, cmd)
+  }
+  writeLines(code, path)
+
 }
+
+
+

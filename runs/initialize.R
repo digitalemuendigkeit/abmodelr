@@ -13,10 +13,14 @@ rndm_seeds <- abs(round(rnorm(300) * 100, 0))
 
 iters <- rstudioapi::showPrompt("How many iterations", "How many iterations do you want to generate", default = NULL)
 
+dropbox_folder <- rstudioapi::selectDirectory(caption = "Select Dropbox Directory", path="~")
+
+
 # initialize run
 initialize_project(
   n_iterations = iters,
   n_conditions = length(config_length),
   project_name = project_name,
-  rndm_seeds = rndm_seeds
+  rndm_seeds = rndm_seeds,
+  copy_location = dropbox_folder
 )

@@ -1,7 +1,7 @@
 # Post generation
 
 generate_news <- function(config){
-  models <- read_rds("topic_modeling/topicmodels.rds") 
+  models <- read_rds(here::here("topic_modeling/topicmodels.rds"))
   if(config$n_topics %in% models$k) {
     topic_count <- config$n_topics
   } else {
