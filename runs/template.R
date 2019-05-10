@@ -47,9 +47,10 @@ generate_topn_truth <- function(user_id, cosine_matrix, n = 1) {
 
 m <- matrix(
   sample(c(0), total_newsposts * config$n_users, replace = TRUE),
-  ncol = total_newsposts, 
+  ncol = total_newsposts,
   dimnames = list(
-    user = paste("u", 1:config$n_users, sep=''), item = paste("i", 1:total_newsposts, sep='')
+    user = paste("u", 1:config$n_users, sep = ''),
+    item = paste("i", 1:total_newsposts, sep = '')
   )
 )
 
