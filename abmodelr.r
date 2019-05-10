@@ -184,10 +184,9 @@ for (steps in 1:config$n_steps) {
   }
   
   #keep record of users' interest
-  tidy(summarytools::descr(user)[1:7,]) %>%
-    column_to_rownames(".rownames") %>%
-    select(starts_with("topic")) -> user_record[[steps]]
-  
+  psych::describe(user)  %>%  as.data.frame() %>% 
+    rownames_to_column() %>%
+    filter(str_starts(rowname, "topic")) %>% mutate(step = steps) -> user_record[[steps]]
   setTxtProgressBar(pb, steps)
 }
 close(pb)

@@ -230,7 +230,7 @@ initialize_project <- function(n_iterations, n_conditions, project_name, rndm_se
       
       # write body of script
       write(
-        lines_tmpl[16:194],
+        lines_tmpl[16:201],
         file = path,
         append = TRUE
       )

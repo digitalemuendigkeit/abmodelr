@@ -5,6 +5,7 @@ library(yaml)
 library(rstudioapi)
 library(recommenderlab)
 library(Matrix)
+library(broom)
 
 source(here::here("runs", "helpers.R"))
 
@@ -74,6 +75,7 @@ generate_topn_rec <- function(user_id, cosine_matrix, n = 1) {
 
 # generate an empty exposure matrix with rownumbers = posts , colnumbers = simulationsteps
 exposure <- matrix(c(0), nrow = total_newsposts, ncol = config$n_steps)
+user_record <- list()
 
 # run all simulation steps
 pb <- txtProgressBar(
@@ -182,6 +184,10 @@ for (steps in 1:config$n_steps) {
     # update cosine matrix
     cosine_matrix <- generate_cosine_matrix(user, news_posts)
   }
+  
+  psych::describe(user)  %>%  as.data.frame() %>% 
+    rownames_to_column() %>%
+    filter(str_starts(rowname, "topic")) %>% mutate(step = steps) -> user_record[[steps]]
   setTxtProgressBar(pb, steps)
 }
 close(pb)
@@ -190,6 +196,7 @@ close(pb)
 results_data <- list(
   user = user, 
   news_posts = news_posts, 
-  exposure = exposure
+  exposure = exposure,
+  user_record = user_record
 )
 
