@@ -143,8 +143,9 @@ for (steps in 1:config$n_steps) {
         if (rbinom(n = 1, size = 1, prob = config$p_user_update)) {
           user[user_id,2:(config$n_topics+1)] <-user[user_id,2:(config$n_topics+1)]+news_posts[consumed_item,2:(config$n_topics+1)]
           # norm users interests
-          user[user_id, 2:(config$n_topics + 1)] <- user[user_id, 2:(config$n_topics+1)] / 
-            sum(user[user_id,2:(config$n_topics + 1)]) * user$interest_resource[user_id]
+
+          user[user_id,2:(config$n_topics+1)] <- user[user_id,2:(config$n_topics+1)] / sum(user[user_id,2:(config$n_topics+1)]) *user$interest_ressource[user_id]
+          
         }
       },
       dominant = {
