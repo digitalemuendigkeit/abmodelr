@@ -1,0 +1,15 @@
+---
+title: ""
+n_topics: 9
+n_users: 300
+n_newsposts: 300
+n_newsposts_step: 5
+topic_limit: 3
+decay_factor: 0.5
+update_for_user: false
+update_user_interest: "none"
+p_user_update: 0.5
+n_steps: 200
+outputfilename: "output.rds"
+recommender: "IBCF"
+---

@@ -233,7 +233,7 @@ initialize_project <- function(n_iterations, n_conditions, project_name, rndm_se
   # write the runner file
   if(!is.null(copy_location)){
     
-    cmd <- paste0("file.copy(from = here::here(\"runs\", \"projects\", \"",toString(project_name),"\"), recursive = T, to=\"",copy_location,"\")")
+    cmd <- paste0("    file.copy(from = here::here(\"runs\", \"projects\", \"",toString(project_name),"\"), recursive = T, to=\"",copy_location,"\")")
     
   } else {
     cmd <- ""
@@ -242,12 +242,19 @@ initialize_project <- function(n_iterations, n_conditions, project_name, rndm_se
     paste0("runner.R"))
   
   # Generate runner file
-  code <- c("# This is a runner file to be started as a job in RStudio")
-  for (i in 1:length(config_length)){
-    code <- c(code,paste0( 
-    "source(here::here(\"runs\", \"projects\", \"",toString(project_name),"\", \"cond-",i,".R\"))"))
-    code <- c(code, cmd)
-  }
+  code <- paste(c("# This is a runner file to be started as a job in RStudio"),
+                 "#do trials in parellel loop",
+                 "library(foreach)",
+                  "library(doParallel)",
+                  "#setup parallel backend to use many processors","",
+                "cores=detectCores()",
+                "cl <- makeCluster(cores[1]-1) #not to overload your computer",
+                "registerDoParallel(cl)","",
+                paste0("foreach(i=1:",length(config_length),") %dopar% {"),
+                paste0("   source(here::here(\"runs\", \"projects\", \"",toString(project_name),"\", paste0(\"cond-\", i, \".R\")))"),
+                cmd,
+                "}", sep = "\n")
+  
   writeLines(code, path)
 
 }
