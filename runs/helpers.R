@@ -134,30 +134,32 @@ generate_news <- function(config) {
   
 }
 
-generate_cosine_matrix <- function(user, news_posts) {
-  #' generate a cosine matrix
-  #' 
-  #' @param user a user data frame
-  #' @param news_posts a news post data frame
-  #' 
-  #' @return cosine_matrix: the generated cosine matrix
-  
-  user %>% select(starts_with("topic")) -> mat_user
-  
-  news_posts %>% select(starts_with("topic")) -> mat_posts
-  
-  cosine_matrix <- matrix(c(0), nrow = config$n_users, ncol = total_newsposts)
-  
-  for(i in 1:config$n_users) {
-    for(j in 1:total_newsposts) {
-      cosine_matrix[i,j] <- lsa::cosine(unlist(mat_user[i,]), unlist(mat_posts[j,]))
-    }
-  }
-  
-  # return the cosine matrix
-  return (cosine_matrix)
-  
-}
+#' generate_cosine_matrix <- function(user, news_posts) {
+#'   #' generate a cosine matrix
+#'   #' 
+#'   #' @param user a user data frame
+#'   #' @param news_posts a news post data frame
+#'   #' 
+#'   #' @return cosine_matrix: the generated cosine matrix
+#'   
+#'   user %>% select(starts_with("topic")) -> mat_user
+#'   
+#'   news_posts %>% select(starts_with("topic")) -> mat_posts
+#'   
+#'   cosine_matrix <- matrix(c(0), nrow = config$n_users, ncol = total_newsposts)
+#'   
+#'   for(i in 1:config$n_users) {
+#'     for(j in 1:total_newsposts) {
+#'       cosine_matrix[i,j] <- lsa::cosine(unlist(mat_user[i,]), unlist(mat_posts[j,]))
+#'     }
+#'   }
+#'   
+#'   # return the cosine matrix
+#'   return (cosine_matrix)
+#'   
+#' }
+
+source(here::here("generate_cosine_Matrix.R"))
 
 initialize_project <- function(n_iterations, n_conditions, project_name, rndm_seeds, copy_location = NULL) {
   #' automatically write R-scripts for simulation runs
