@@ -1,6 +1,5 @@
 # User setup 
 
-
 generate_users <- function(config){
   user_ids <- 1:config$n_users
   # initialize interest_resource with 3 time the amount of topics. So users have haed_room to increase their interest

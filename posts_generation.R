@@ -18,7 +18,7 @@ generate_news <- function(config){
   mean_vec <- rep(0.5,nrow(cov_mat))
   
   # create ids 
-  total_newsposts <-config$n_newsposts + config$n_newsposts_step * config$n_steps
+  total_newsposts <- config$n_newsposts + config$n_newsposts_step * config$n_steps
   news_ids <- 1:total_newsposts
   topic_relevances <- data.frame(news_ids)
   
@@ -29,7 +29,7 @@ generate_news <- function(config){
   #names(topic_relevance) <- paste0("topic_", i)
   #topic_relevances <- topic_relevances %>% bind_cols(topic_relevance)
   #}
-  relevs <- as_tibble(MASS::mvrnorm(n=total_newsposts, mu = mean_vec, Sigma = cov_mat))
+  relevs <- as_tibble(MASS::mvrnorm(n = total_newsposts, mu = mean_vec, Sigma = cov_mat))
   names(relevs) <- paste0("topic_", 1:config$n_topics)
   topic_relevances <- topic_relevances %>% bind_cols(relevs)
   

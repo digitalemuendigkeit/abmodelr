@@ -1,6 +1,3 @@
-#PLESE DO NOT COPY PASTE CODE FROM OTHER FILES HERE!
-#instead, source the function if neccessary, otherwise there will be different versions of the same code all over the project
-
 load_config <- function(project_dir) {
   #' read yaml files from a specified project directory
   #' the directory should be located in /runs
@@ -128,6 +125,13 @@ source(here::here("generate_cosine_Matrix.R"))
 #'   
 #' }
 
+set_rd_seeds <- function() {
+  abs(round(rnorm(300) * 100, 0))
+}
+
+# generate a sufficient amount of random seeds for reproducibility
+rndm_seeds <- set_rd_seeds()
+
 initialize_project <- function(n_iterations, n_conditions, project_name, rndm_seeds, copy_location = NULL) {
   #' automatically write R-scripts for simulation runs
   #' 
@@ -135,6 +139,7 @@ initialize_project <- function(n_iterations, n_conditions, project_name, rndm_se
   #' @param n_conditions number of experimental conditions
   #' @param project_name name of the simulation project
   #' @param rndm_seeds list of normally distributed random seeds
+  #' @param copy_location location to copy results to
   
   # set maximum number of iterations
   if (n_iterations > 50) {
@@ -146,7 +151,7 @@ initialize_project <- function(n_iterations, n_conditions, project_name, rndm_se
   dir.create(here::here("runs", "projects", toString(project_name), "results"))
   
   
-  for (i in 1:length(config_length)) {
+  for (i in 1:n_conditions) {
     
     cond <- i
     
@@ -155,105 +160,100 @@ initialize_project <- function(n_iterations, n_conditions, project_name, rndm_se
       paste0("cond-", toString(cond), ".R")
     )
     
-    write(paste0("", "\n"), file = path)
+    # open connection to template file
+    con_tmpl <- file(here::here("runs", "template.R"), "r+")
+    lines_tmpl <- readLines(con_tmpl)
     
-    for (j in 1:n_iterations) {
+    # write libraries
+    write(
+      lines_tmpl[1:12],
+      file = path,
+      append = TRUE
+    )
       
-      iteration <- j
-      
-      # open connection to template file
-      con_tmpl <- file(here::here("runs", "template.R"), "r+")
-      lines_tmpl <- readLines(con_tmpl)
-      
-      # write libraries
-      write(
-        lines_tmpl[1:11],
-        file = path,
-        append = TRUE
-      )
-      
-      # write loading of config file
-      write(
-        paste0(
-          "config <- load_config(\"", project_name, 
-          "\")[[\"", "cond-", toString(cond), ".yml", "\"]]", "\n"
-        ),
-        file = path,
-        append = TRUE
-      )
-      
-      # write setting of random seed
-      write(
-        lines_tmpl[14],
-        file = path,
-        append = TRUE
-      )
-      
-      write(
-        paste0(
-          "set.seed(", toString(rndm_seeds[j]), ")", "\n"
-        ),
-        file = path,
-        append = TRUE
-      )
-      
-      # write body of script
-      write(
-        lines_tmpl[16:201],
-        file = path,
-        append = TRUE
-      )
-      
-      # write file saving
-      write(
-        paste0(
-          "rds_filename <- paste0(\"", toString(cond), "-", toString(iteration), 
-          "\", \"-\", ", "config$outputfilename)", "\n", "write_rds(", 
-          "path = here::here(", "\"runs\", \"projects\", \"", toString(project_name), 
-          "\", \"results\", rds_filename), x = results_data)", "\n"
-        ),
-        file = path,
-        append = TRUE
-      )
-      
-      # write cleaning up environment
-      write(
-        paste0("\n", "rm(list = ls())", "\n", "\n"),
-        file = path,
-        append = TRUE
-      )
-      
-      # close connection to template file
-      close(con_tmpl)
-      
-    }
-      
+    # load config file
+    write(
+      paste0(
+        "config <- load_config(\"", project_name, "\")[[\"", 
+        "cond-", toString(cond), ".yml", "\"]]", "\n"
+      ),
+      file = path,
+      append = TRUE
+    )
+    
+    # number of iterations 
+    write(
+      paste0("n_iter <- ", toString(n_iterations), "\n"), 
+      file = path,
+      append = TRUE
+    )
+    
+    # write body of script
+    write(
+      lines_tmpl[14:207],
+      file = path,
+      append = TRUE
+    )
+    
+    # write file saving
+    write(
+      paste0(
+        "  rds_filename <- paste0( \n",
+        "    \"1-\", toString(iter), \"-\", config$outputfilename \n",
+        "  ) \n\n",
+        "  write_rds( \n",
+        "    path = here::here( \n",
+        "      \"runs\", \"projects\", \"test-project\", \"results\", rds_filename \n",
+        "    ), \n", 
+        "    x = results_data \n",
+        "  ) \n\n"
+      ),
+      file = path,
+      append = TRUE
+    )
+
+    # close for loop
+    write(
+      lines_tmpl[209], 
+      file = path,
+      append = TRUE
+    )
+    
+    # close connection to template file
+    close(con_tmpl)
+        
   }
+  
+  
   
   # write the runner file
   if(!is.null(copy_location)){
-    
-    cmd <- paste0("    file.copy(from = here::here(\"runs\", \"projects\", \"",toString(project_name),"\"), recursive = T, to=\"",copy_location,"\")")
-    
+    cmd <- paste0(
+      "    file.copy(from = here::here(\"runs\", \"projects\", \"", 
+      toString(project_name), "\"), recursive = T, to=\"", copy_location,"\")"
+    )
   } else {
     cmd <- ""
   }
-  path <- here::here("runs", "projects", toString(project_name), 
-    paste0("runner.R"))
+  
+  path <- here::here("runs", "projects", toString(project_name), paste0("runner.R"))
   
   # Generate runner file
-  code <- paste(c("# This is a runner file to be started as a job in RStudio"),
-                 "#do trials in parellel loop",
-                 "library(foreach)",
-                  "library(doParallel)",
-                  "#setup parallel backend to use many processors","",
-                "cores=detectCores()",
-                "cl <- makeCluster(cores[1]-1) #not to overload your computer",
-                "registerDoParallel(cl)","",
-                paste0("foreach(i=1:",length(config_length),") %dopar% {"),
-                paste0("   source(here::here(\"runs\", \"projects\", \"",toString(project_name),"\", paste0(\"cond-\", i, \".R\")))"),
-                cmd,
-                "}", sep = "\n")
+  code <- paste(
+    c("# This is a runner file to be started as a job in RStudio"),
+    "#do trials in parellel loop",
+    "library(foreach)",
+    "library(doParallel)",
+    "#setup parallel backend to use many processors","",
+    "cores=detectCores()",
+    "cl <- makeCluster(cores[1]-1) #not to overload your computer",
+    "registerDoParallel(cl)","",
+    paste0("foreach(i=1:", n_iterations, ") %dopar% {"),
+    paste0("   source(here::here(\"runs\", \"projects\", \"", 
+           toString(project_name),"\", paste0(\"cond-\", i, \".R\")))"),
+    cmd,
+    "}", sep = "\n"
+  )
   
   writeLines(code, path)
 
